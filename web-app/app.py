@@ -16,7 +16,7 @@ control = rpi_control_()           # Control object
 
 http = urllib3.PoolManager()
 
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web_app/cvs.db'
+PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
 
 app = Flask(__name__)
 
