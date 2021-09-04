@@ -17,7 +17,6 @@
 
 
 ## Table of contents
------------------------------------------
 * [General info](#general-info)
 * [Setup](#setup)
 * [Control Server](#control-server)
@@ -26,20 +25,16 @@
 
 
 ## General info
----------------------------
 This project is simple Lorem ipsum dolor generator.
 
 
 ## Setup
-------------------
-
 - To install dependencies for this project, run this bash script on Raspberry Pi:
 ```
 $ ./setup.sh
 ```
 
 ## Control Server
-----------------------------
 Discription of control server
 
 ### System Architecture
@@ -61,7 +56,6 @@ To run this project, install it locally on Raspberry Pi:
 
 
 ## GUI Application
------------------------
 Discription of control server
 
 ### System Architecture
