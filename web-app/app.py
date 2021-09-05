@@ -5,14 +5,16 @@ from flask import Flask, request, jsonify
 import sqlite3
 import requests as req
 import urllib3
-from control import rpi_control_, dht_worker, adc_worker
+import control
+import action
 from time import sleep
 import RPi.GPIO as GPIO
 
 ###############  OBJECTS  ###############################
-control = rpi_control_()           # Control object
-dht_thread = dht_worker()
-adc_thread = adc_worker()
+# control = control.rpi_control_()           # Control object
+dht_thread = control.dht_worker()
+adc_thread = control.adc_worker()
+action_thread = action.action_worker()
 http = urllib3.PoolManager()
 app = Flask(__name__)
 
@@ -21,10 +23,10 @@ app = Flask(__name__)
 
 dht_thread.start()
 adc_thread.start()
-
+action_thread.start()
 
 ################ Database Path #########################
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web_app/cvs.db'
+PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
 
 
 
@@ -64,6 +66,7 @@ def handle_post():
       conn.commit()                             ## commit
       conn.close()                              ## cleanup
       return jsonify(response)                  ## present data as json file 
+
 ########################### POST REQUEST ############################
    elif request.method == 'POST':
       sensor_name = request.form['name']
@@ -150,7 +153,11 @@ def handle_actuator_post():
             response[cnt]['id'] = row[0]
             response[cnt]['name'] = row[1]
             response[cnt]['number'] = row[2]
-            response[cnt]['isDigital'] = row[3]
+            response[cnt]['discription'] = row[3]
+            response[cnt]['isDigital'] = row[4]
+            response[cnt]['value'] = row[5]
+            response[cnt]['type'] = row[6]
+            
             cnt = cnt + 1    
          response['status_code'] = 201                         ## if response get data return 201 
       else:
@@ -221,51 +228,86 @@ def get_actuator(id_):                                                       ## 
       conn.close()                                                     ## cleanup
       return jsonify(response) 
 
+
+
+
 #############################################################
 #   Description :  Route actuators (servo) with ID          #
 #   methods     :  POST servo [angle]                       #
 #                                                           #
 #############################################################
-@app.route('/actuators/servo/<int:id_>', methods=['POST'])
+@app.route('/actuators/set_action/<int:id_>', methods=['POST'])
 def control_servo(id_):                                                     ## get ID to get its data
    response = {}                                                            
-   data = int(request.form['value'])                                        ## take servo angle and store it in data variable
-   control.change_servo_angle(data)                                         ## control servo to change its angle
-   action_msg = "the servo" + str(id_) + " is rotated by " + str(data) + " degree"
+   value = int(request.form['value'])
+   action_type = request.form['action_type']
+
+                                          
+   # control.change_servo_angle(data)                                         ## control servo to change its angle
+   # action_msg = "the actuator" + str(id_) + " is rotated by " + str(data) + " degree"
+
    conn = sqlite3.connect(PATH_2_DB)                                        ## connect to DB
-   cursor = conn.cursor()                                                   ## get a cursor
-   sql = "INSERT INTO system_log(log_message) VALUES (?)"
-   cursor.execute(sql, (action_msg,))                                      ## execute INSERT
+   cursor = conn.cursor()      
+
+   sql_1 = "INSERT INTO system_log(log_message) VALUES (?)"
+   sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"
+
+   # cursor.execute(sql_1, (action_msg,))
+   cursor.execute(sql_2, (value, action_type, id_))                                      ## execute INSERT
+   
    conn.commit()                                                           ## commit
    conn.close()                                                            ## cleanup
-   response['action'] = action_msg
+   # response['action'] = action_msg
    response['status_code'] = 201                                           ## if response get data return 201 
    return jsonify(response)                                                ## present data as json file
+
+
+# #############################################################
+# #   Description :  Route actuators (servo) with ID          #
+# #   methods     :  POST servo [angle]                       #
+# #                                                           #
+# #############################################################
+# @app.route('/actuators/servo/<int:id_>', methods=['POST'])
+# def control_servo(id_):                                                     ## get ID to get its data
+#    response = {}                                                            
+#    data = int(request.form['value'])                                        ## take servo angle and store it in data variable
+#    control.change_servo_angle(data)                                         ## control servo to change its angle
+#    action_msg = "the servo" + str(id_) + " is rotated by " + str(data) + " degree"
+#    conn = sqlite3.connect(PATH_2_DB)                                        ## connect to DB
+#    cursor = conn.cursor()                                                   ## get a cursor
+#    sql = "INSERT INTO system_log(log_message) VALUES (?)"
+#    cursor.execute(sql, (action_msg,))                                      ## execute INSERT
+#    conn.commit()                                                           ## commit
+#    conn.close()                                                            ## cleanup
+#    response['action'] = action_msg
+#    response['status_code'] = 201                                           ## if response get data return 201 
+#    return jsonify(response)                                                ## present data as json file
  
 
-#############################################################
-#   Description :  Route of Actuators (LED) with ID         #
-#   methods     :  POST led [brightness]                    #
-#   URL         :  /actuators/led/<int:id_>                 #
-#############################################################
+# #############################################################
+# #   Description :  Route of Actuators (LED) with ID         #
+# #   methods     :  POST led [brightness]                    #
+# #   URL         :  /actuators/led/<int:id_>                 #
+# #############################################################
 
-@app.route('/actuators/led/<int:id_>', methods=['POST'])
-def control_led(id_):                                                    ## get ID to get its data
-   response = {}
-   data = int(request.form['value'])                                ## take led brightness and store it in data variable
-   control.change_brightness(data)
-   action_msg = "the led" + str(id_) + "'s brightness is " + str(data) 
+# @app.route('/actuators/led/<int:id_>', methods=['POST'])
+# def control_led(id_):                                                    ## get ID to get its data
+#    response = {}
+#    data = int(request.form['value'])                                ## take led brightness and store it in data variable
+#    control.change_brightness(data)
+#    action_msg = "the led" + str(id_) + "'s brightness is " + str(data) 
 
-   conn = sqlite3.connect(PATH_2_DB)                                     ## connect to DB
-   cursor = conn.cursor()                                                ## get a cursor
-   sql = "INSERT INTO system_log(log_message) VALUES (?)"
-   cursor.execute(sql, (action_msg,))                                    ## execute INSERT
-   conn.commit()                                                         ## commit
-   conn.close()                                                          ## cleanup
+#    conn = sqlite3.connect(PATH_2_DB)                                     ## connect to DB
+#    cursor = conn.cursor()                                                ## get a cursor
+#    sql = "INSERT INTO system_log(log_message) VALUES (?)"
+#    cursor.execute(sql, (action_msg,))                                    ## execute INSERT
+#    conn.commit()                                                         ## commit
+#    conn.close()                                                          ## cleanup
 
-   response['action'] = action_msg
-   response['status_code'] = 201                                         ## if response get data return 201
-   return jsonify(response)                                              ## present data as json file
+#    response['action'] = action_msg
+#    response['status_code'] = 201                                         ## if response get data return 201
+#    return jsonify(response)                                              ## present data as json file
+
 
 
 #############################################################
@@ -289,6 +331,7 @@ def get_sensor_log():
             response[cnt]['id'] = row[0]
             response[cnt]['log_message'] = row[1]
             response[cnt]['time'] = row[2]
+            response[cnt]['type'] = row[3]
             cnt = cnt + 1
          response['status_code'] = 201                                        ## if response get data return 201 
       else:

@@ -9,7 +9,8 @@ import time
 import threading
 import sqlite3
 
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web_app/cvs.db'
+
+PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
 
 ###########################################################
 #                  CLASSES                                #
@@ -40,8 +41,8 @@ class dht_worker():
                 sql_1 = "UPDATE sensor SET sensor_data=(?) WHERE name=(?)"
                 cursor.execute(sql_1,(temperature, self.dht_val_2db))           ## execute INSERT
 
-                sql_2 = "INSERT INTO system_log(log_message) VALUES (?)"
-                cursor.execute(sql_2, (action_msg,))  
+                sql_2 = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
+                cursor.execute(sql_2, (action_msg,"sensing"))  
 
                 conn.commit()                                ## commit
                 conn.close()                                 ## cleanup
@@ -72,8 +73,8 @@ class adc_worker():
                 sql_1 = "UPDATE sensor SET sensor_data=(?) WHERE name=(?)"
                 cursor.execute(sql_1,(value,self.adc_val_2db))           ## execute INSERT
 
-                sql_2 = "INSERT INTO system_log(log_message) VALUES (?)"                  
-                cursor.execute(sql_2, (action_msg,))  
+                sql_2 = "INSERT INTO system_log(log_message, type) VALUES (?,?)"                  
+                cursor.execute(sql_2, (action_msg,"sense"))  
 
                 conn.commit()                                ## commit
                 conn.close()                                 ## cleanup
