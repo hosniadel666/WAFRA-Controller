@@ -7,13 +7,13 @@ sudo apt install python3 -y
 sudo apt install python3-pip -y
 udo apt-get install git-core -y
 
-./sublime.sh
-./socket_io.sh
-./sqlite3.sh
-./ssh.sh
-./remote-desktop-connection.sh
-./pyqt.sh
-./dht_11.sh
-./flask.sh
-./curl.sh
-./ads1115.sh
+./bash-scripts/sublime.sh
+./bash-scripts/socket_io.sh
+./bash-scripts/sqlite3.sh
+./bash-scripts/ssh.sh
+./bash-scripts/remote-desktop-connection.sh
+./bash-scripts/pyqt.sh
+./bash-scripts/dht_11.sh
+./bash-scripts/flask.sh
+./bash-scripts/curl.sh
+./bash-scripts/ads1115.sh
