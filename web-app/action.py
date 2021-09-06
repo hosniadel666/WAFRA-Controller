@@ -8,8 +8,8 @@ from time import sleep
 import threading
 import sqlite3
 import control
-
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
+from dotenv import load_dotenv
+import os
 
 class action_worker():
     def __init__(self):
@@ -22,7 +22,7 @@ class action_worker():
 
     def act(self):
         while True:
-            self.conn = sqlite3.connect(PATH_2_DB)                       
+            self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))                       
             self.cursor = self.conn.cursor()
             
             self.cursor.execute("select * from actuator")
@@ -68,6 +68,5 @@ class action_worker():
             elif type == "ON":
                 self.control.change_servo_angle(value)
 
-   # def __del__(self):
 
 

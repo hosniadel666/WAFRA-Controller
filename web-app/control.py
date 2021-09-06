@@ -8,9 +8,8 @@ from time import sleep
 import time
 import threading
 import sqlite3
-
-
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
+from dotenv import load_dotenv
+import os
 
 ###########################################################
 #                  CLASSES                                #
@@ -35,7 +34,7 @@ class dht_worker():
             ## check if tempreture and humidity data is correct ##
             if humidity is not None and temperature is not None:
                 action_msg = "the dht_1 reading is " + str(temperature) + " celsius"
-                conn = sqlite3.connect(PATH_2_DB)            ## connect to DB
+                conn = sqlite3.connect(os.getenv('PATH_2_DB'))            ## connect to DB
                 cursor = conn.cursor()                       ## get a cursor
 
                 sql_1 = "UPDATE sensor SET sensor_data=(?) WHERE name=(?)"
@@ -68,7 +67,7 @@ class adc_worker():
             if value is not None:
                 sleep(4)
                 action_msg = "the adc_1 reading is " + str(value)
-                conn = sqlite3.connect(PATH_2_DB)            ## connect to DB
+                conn = sqlite3.connect(os.getenv('PATH_2_DB'))            ## connect to DB
                 cursor = conn.cursor()                       ## get a cursor
                 sql_1 = "UPDATE sensor SET sensor_data=(?) WHERE name=(?)"
                 cursor.execute(sql_1,(value,self.adc_val_2db))           ## execute INSERT
