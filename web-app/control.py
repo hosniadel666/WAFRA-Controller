@@ -8,14 +8,9 @@ from time import sleep
 import time
 import threading
 import sqlite3
-<<<<<<< HEAD
-
-
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
-=======
 from dotenv import load_dotenv
 import os
->>>>>>> 8e335bd79015d25fde53fe1a40d8729abbe730e6
+
 
 ###########################################################
 #                  CLASSES                                #
