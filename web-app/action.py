@@ -1,9 +1,6 @@
 ###########################################################
 #                        IMPORT                           #
 ###########################################################
-import RPi.GPIO as GPIO
-import Adafruit_DHT
-import Adafruit_ADS1x15
 from time import sleep
 import threading
 import sqlite3
@@ -12,7 +9,7 @@ import os
 
 class action_worker():
     def __init__(self):
-        self.control = control.rpi_control_()
+        self.control = control.control()
 
     def start(self):
         myThread = threading.Thread(target=self.act)
@@ -38,15 +35,15 @@ class action_worker():
             if type == "UPDATE" :
                 self.control.change_brightness(value, id)
             elif type == "OFF":
-                self.control.change_brightness(0)
+                self.control.change_brightness(0, id)
             elif type == "ON":
-                self.control.change_brightness(value, id)
+                self.control.change_brightness(100, id)
 
         elif id == 2:
             if type == "UPDATE" :
                 self.control.change_brightness(value, id)
             elif type == "OFF":
-                self.control.change_brightness(0)
+                self.control.change_brightness(0, id)
             elif type == "ON":
                 self.control.change_brightness(value, id)
 
@@ -54,7 +51,7 @@ class action_worker():
             if type == "UPDATE" :
                 self.control.change_brightness(value, id)
             elif type == "OFF":
-                self.control.change_brightness(0)
+                self.control.change_brightness(0, id)
             elif type == "ON":
                 self.control.change_brightness(value, id)
 

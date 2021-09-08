@@ -1,5 +1,5 @@
 ###########################################################
-#                  IMPORT                                 #
+#                    IMPORT                               #
 ###########################################################
 from flask import Flask, request, jsonify
 import sqlite3
@@ -10,7 +10,6 @@ import sensor
 import actuator
 import log
 from dotenv import load_dotenv
-
 
 ###############  OBJECTS  ###############################
 dht_thread = control.dht_worker()
@@ -25,13 +24,10 @@ dht_thread.start()
 adc_thread.start()
 action_thread.start()
 
-
 ################ Load Environment variables #########################
 load_dotenv()
 
-
-
-
+############### Extract Header Data From API Requests################
 def get_header_info():
    response={}
    response['method'] = request.__dict__['environ']['REQUEST_METHOD']
@@ -127,12 +123,15 @@ def get_actuator(id):
 #############################################################
 @app.route('/actuators/set_action/<int:id>', methods=['POST'])
 def control_servo(id):  
+   
    header_log = log.log()
-   header_log.add(get_header_info(), "HEADER_INFO")      
+   header_log.add(get_header_info(), "HEADER_INFO")     
+    
    actuator_obj = actuator.actuator()    
-   value = int(request.form['value'])
+   #value = int(request.form['value'])
    action_type = request.form['action_type']
-   return jsonify(actuator_obj.set_action(id, value, action_type)) 
+   #return jsonify(actuator_obj.set_action(id, value, action_type)) 
+   return jsonify(actuator_obj.set_action(id, action_type)) 
 
 #############################################################
 #   Description :  Route of sensor_log with ID for each one #

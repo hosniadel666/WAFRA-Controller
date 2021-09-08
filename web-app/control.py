@@ -15,9 +15,9 @@ import os
 
 ###########################################################
 #                  CLASSES                                #
-############################################################
+###########################################################
 
-################## DHT (tempreture sensor) Class ###########
+################# DHT (tempreture sensor) Class ##########
 
 class dht_worker():
     def __init__(self):
@@ -36,17 +36,10 @@ class dht_worker():
             humidity,temperature = Adafruit_DHT.read_retry(self.sensor, self.DHT11_pin)
             
             if humidity is not None and temperature is not None:
-                sensor_obj_1.update_temerature(temperature)
-
-                log_obj_1 = log.log()
-                action_msg_1 = "the temperature is " + str(temperature) + " celsius"
-                log_obj_1.add(action_msg_1, "sensing")       
-                
+                sensor_obj_1.update_temerature(temperature)                
                 sensor_obj_2.update_humidity(humidity)
                 
-                log_obj_2 = log.log()
-                action_msg_2 = "the humidity is " + str(humidity) + " %"
-                log_obj_2.add(action_msg_2, "sensing")
+                
 
 #################### ADC Class ##############################
 
@@ -66,16 +59,12 @@ class adc_worker():
             sleep(3)
             sensor_obj = sensor.sensor()
             value = self.adc.read_adc(self.channel, gain=self.gain)
-            value = math.ceil(value * (5 / 32786))
+            value = value * (5 / 32786)
             if value is not None:
                 sensor_obj.update_adc(value)
-                log_obj = log.log()
-                action_msg = "the voltage reading is " + str(value)
-                log_obj.add(action_msg, "sensing")
-
-
+                
 ################## rpi_control Class ###########
-class rpi_control_():                                      
+class control():                                      
     servo_pwm = 11                                   
     led_pwm_1 = 8                                         
     led_pwm_2 = 13
@@ -120,9 +109,9 @@ class rpi_control_():
     def change_brightness(self, brightness, id):
         if id == 1:
             self.led_1_intensity.ChangeDutyCycle(brightness)
-        if id == 2:
+        elif id == 2:
             self.led_2_intensity.ChangeDutyCycle(brightness)
-        if id == 3:
+        elif id == 3:
             self.led_3_intensity.ChangeDutyCycle(brightness)
         
 

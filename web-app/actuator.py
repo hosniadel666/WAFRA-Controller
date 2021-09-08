@@ -2,6 +2,7 @@ from flask import jsonify
 from dotenv import load_dotenv
 import os
 import sqlite3
+import log
 
 class actuator():
     def __init__(self):
@@ -59,20 +60,26 @@ class actuator():
      
     def remove(self, id):
         action_msg = "the actuator with id "+ str(id) + " is deleted"
+        action_log = log.log()
+        action_log.add(action_msg, "Reading")
+        
         self.cursor.execute("delete from actuator where id=(?)", (id,))       
-        sql = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
-        self.cursor.execute(sql, (action_msg, "Reading")) 
+        
         self.response['status_code'] = 201                                   
         self.response['message'] = action_msg 
         self.close()
         return self.response
       
-    def set_action(self, id, value, action_type):
-        action_msg = "the actuator" + str(id) + " is rotated by " + str(value) + " degree"
-        sql_1 = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
-        sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"
-        self.cursor.execute(sql_1, (action_msg, "Action"))
-        self.cursor.execute(sql_2, (value, action_type, id))
+    #def set_action(self, id, value, action_type):
+    def set_action(self, id, action_type):
+        action_msg = "the actuator " + str(id) + " is " + action_type
+
+        action_log = log.log()
+        action_log.add(action_msg, "Action")
+        
+        sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"        
+        # self.cursor.execute(sql_2, (value, action_type, id))
+        self.cursor.execute(sql_2, (1, action_type, id))
         self.response['status_code'] = 201
         self.close()
         return self.response

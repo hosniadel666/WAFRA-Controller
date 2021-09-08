@@ -64,25 +64,40 @@ class sensor():
     
     def remove(self, id):
         action_msg = "the sensor with id "+ str(id_) + " is deleted"
+        action_log = log.log()
+        action_log.add(action_msg, "Reading")
+        
         self.cursor.execute("delete from actuator where id=(?)", (id,))  
         sql = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
-        self.cursor.execute(sql, (action_msg, "Reading")) 
+
         self.response['status_code'] = 201                                 
         self.response['message'] = action_msg 
         self.close()
         return self.response
         
     def update_temerature(self, value):
+        log_obj_1 = log.log()
+        action_msg_1 = "the temperature is " + str(value) + " celsius"
+        log_obj_1.add(action_msg_1, "Reading") 
+                
         sql_statement = "UPDATE sensor SET sensor_data=(?) WHERE id=(?)"
         self.cursor.execute(sql_statement,(value, self.temp_id))          
         self.close()
 
     def update_humidity(self, value):
+        log_obj_2 = log.log()
+        action_msg_2 = "the humidity is " + str(value) + " %"
+        log_obj_2.add(action_msg_2, "Reading")
+                
         sql_statement = "UPDATE sensor SET sensor_data=(?) WHERE id=(?)"
         self.cursor.execute(sql_statement,(value, self.humidity_id))         
         self.close()
         
     def update_adc(self, value):
+        log_obj = log.log()
+        action_msg = "the voltage reading is " + str(value)
+        log_obj.add(action_msg, "Reading")
+                
         sql_statement = "UPDATE sensor SET sensor_data=(?) WHERE id=(?)"
         self.cursor.execute(sql_statement,(value,self.adc_id)) 
         self.close()         
