@@ -1,3 +1,4 @@
+from flask import jsonify
 from dotenv import load_dotenv
 import os
 import sqlite3
@@ -74,6 +75,7 @@ class actuator():
         self.cursor.execute(sql_2, (value, action_type, id))
         self.response['status_code'] = 201
         self.close()
+        return self.response
         
     def close(self):
         self.conn.commit()                          

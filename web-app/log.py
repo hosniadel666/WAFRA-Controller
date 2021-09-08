@@ -4,7 +4,7 @@ import sqlite3
 
 class log():
     def __init__(self):
-        self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))                                      ## connect to DB
+        self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))                                 
         self.cursor = self.conn.cursor() 
         self.response = {}  
 
@@ -13,7 +13,7 @@ class log():
         rows = self.cursor.fetchall()      
                      
         if len(rows) >= 1:
-            cnt = 0                                                           ## counter for sensors
+            cnt = 0                                                          
             for row in rows:
                 self.response[cnt] = {}
                 self.response[cnt]['id'] = row[0]
@@ -21,7 +21,7 @@ class log():
                 self.response[cnt]['time'] = row[2]
                 self.response[cnt]['type'] = row[3]
                 cnt = cnt + 1
-            self.response['status_code'] = 201                                        ## if response get data return 201 
+            self.response['status_code'] = 201                                       
         else:
             self.response['status_code'] = 401
         self.close()
@@ -32,6 +32,6 @@ class log():
         self.cursor.execute(sql_statement, (msg, type))
         self.close()
         
-    def close(self):                                                                                                 ## if response can't get data return 401 
+    def close(self):                                                                                                
         self.conn.commit()                          
         self.conn.close()

@@ -8,8 +8,7 @@ from time import sleep
 import threading
 import sqlite3
 import control
-
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
+import os
 
 class action_worker():
     def __init__(self):
@@ -22,7 +21,7 @@ class action_worker():
 
     def act(self):
         while True:
-            self.conn = sqlite3.connect(PATH_2_DB)                       
+            self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))                       
             self.cursor = self.conn.cursor()
             
             self.cursor.execute("select * from actuator")
@@ -37,28 +36,27 @@ class action_worker():
     def handle(self, id, value, type):
         if id == 1:
             if type == "UPDATE" :
-                # print(value)
-                self.control.change_brightness(value)
+                self.control.change_brightness(value, id)
             elif type == "OFF":
                 self.control.change_brightness(0)
             elif type == "ON":
-                self.control.change_brightness(value)
+                self.control.change_brightness(value, id)
 
-        # elif id == 2:
-        #     if type == "UPDATE" :
-        #         self.control.change_brightness(value)
-        #     elif type == "OFF":
-        #         self.control.change_brightness(0)
-        #     elif type == "ON":
-        #         self.control.change_brightness(value)
+        elif id == 2:
+            if type == "UPDATE" :
+                self.control.change_brightness(value, id)
+            elif type == "OFF":
+                self.control.change_brightness(0)
+            elif type == "ON":
+                self.control.change_brightness(value, id)
 
-        # elif id == 3:
-        #     if type == "UPDATE" :
-        #         self.control.change_brightness(value)
-        #     elif type == "OFF":
-        #         self.control.change_brightness(0)
-        #     elif type == "ON":
-        #         self.control.change_brightness(value)
+        elif id == 3:
+            if type == "UPDATE" :
+                self.control.change_brightness(value, id)
+            elif type == "OFF":
+                self.control.change_brightness(0)
+            elif type == "ON":
+                self.control.change_brightness(value, id)
 
         elif id == 4:
             if type == "UPDATE" :
@@ -66,8 +64,7 @@ class action_worker():
             elif type == "OFF":
                 self.control.change_servo_angle(2)
             elif type == "ON":
-                self.control.change_servo_angle(value)
+                self.control.change_servo_angle(90)
 
-   # def __del__(self):
 
 

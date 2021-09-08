@@ -34,7 +34,6 @@ class sensor():
         self.close()
         return self.response   
 
-
     def get_id(self, id):
         self.cursor.execute("select * from sensor where id=(?)", (id,)) 
         rows = self.cursor.fetchall()                                               
@@ -72,7 +71,6 @@ class sensor():
         self.response['message'] = action_msg 
         self.close()
         return self.response
-        
         
     def update_temerature(self, value):
         sql_statement = "UPDATE sensor SET sensor_data=(?) WHERE id=(?)"

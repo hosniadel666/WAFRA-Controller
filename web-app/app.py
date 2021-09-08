@@ -3,15 +3,14 @@
 ###########################################################
 from flask import Flask, request, jsonify
 import sqlite3
-import requests as req
 import urllib3
 import control
 import action
-from time import sleep
-import RPi.GPIO as GPIO
 import sensor
 import actuator
 import log
+from dotenv import load_dotenv
+
 
 ###############  OBJECTS  ###############################
 dht_thread = control.dht_worker()
@@ -26,6 +25,22 @@ dht_thread.start()
 adc_thread.start()
 action_thread.start()
 
+
+################ Load Environment variables #########################
+load_dotenv()
+
+
+
+
+def get_header_info():
+   response={}
+   response['method'] = request.__dict__['environ']['REQUEST_METHOD']
+   response['path'] = request.__dict__['environ']['PATH_INFO']
+   response['remote_addr'] = request.__dict__['environ']['REMOTE_ADDR']
+   response['host_server'] = request.__dict__['environ']['HTTP_HOST']
+   header_msg = response['remote_addr'] + " " + response['method'] + " " + response['host_server'] + response['path']
+   return header_msg
+
 ######################################################################
 #   Description :  Route for sensors                                 #
 #   methods     :  Get , Post [name,number, discription,isDigitsl]   #
@@ -33,6 +48,8 @@ action_thread.start()
 ######################################################################
 @app.route('/sensors', methods=['GET','POST'])
 def handle_post():
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")      
 ########################### GET  REQUEST ############################
    if request.method == 'GET':
       sensor_obj = sensor.sensor()
@@ -54,7 +71,9 @@ def handle_post():
 #                                                         #
 ###########################################################
 @app.route('/sensors/<int:id>', methods=['GET', 'DELETE'])
-def get_sensor(id):                                                 
+def get_sensor(id): 
+   header_log = log.log()  
+   header_log.add(get_header_info(), "HEADER_INFO")                                              
    if request.method == 'GET':
       sensor_obj = sensor.sensor()                                                 
       return jsonify(sensor_obj.get_id(id)) 
@@ -70,6 +89,8 @@ def get_sensor(id):
 ###########################################################
 @app.route('/actuators', methods=['POST', 'GET'])
 def handle_actuator_post():
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")      
 ###################  GET REQUEST   #########################
    if request.method == 'GET':
       actuator_obj = actuator.actuator()
@@ -89,7 +110,9 @@ def handle_actuator_post():
 #                                                         #
 ###########################################################
 @app.route('/actuators/<int:id>', methods=['GET', 'DELETE'])
-def get_actuator(id):                                                    
+def get_actuator(id): 
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")                                                         
    if request.method == 'GET':                                                
       actuator_obj = actuator.actuator()
       return jsonify(actuator_obj.get_id(id)) 
@@ -104,6 +127,8 @@ def get_actuator(id):
 #############################################################
 @app.route('/actuators/set_action/<int:id>', methods=['POST'])
 def control_servo(id):  
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")      
    actuator_obj = actuator.actuator()    
    value = int(request.form['value'])
    action_type = request.form['action_type']
@@ -116,6 +141,8 @@ def control_servo(id):
 #############################################################
 @app.route('/system_log', methods=['GET'])
 def get_sensor_log():
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")      
    if request.method == 'GET':                                
       system_log = log.log()
       return jsonify(system_log.get_all())  

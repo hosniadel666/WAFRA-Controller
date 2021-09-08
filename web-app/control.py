@@ -10,9 +10,8 @@ import threading
 import math
 import sensor
 import log
-
-
-PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
+from dotenv import load_dotenv
+import os
 
 ###########################################################
 #                  CLASSES                                #
@@ -25,29 +24,29 @@ class dht_worker():
         self.sensor = Adafruit_DHT.DHT11
         self.DHT11_pin = 4                        
 
-    ## create thread to show tempreture and humidity ##
     def start(self):
         myThread = threading.Thread(target=self._read)
         myThread.daemon = True
         myThread.start()
-    ## read tempreture and humidity from sensor and print it ##
+
     def _read(self):
         while True:
             sensor_obj_1 = sensor.sensor()
             sensor_obj_2 = sensor.sensor()
             humidity,temperature = Adafruit_DHT.read_retry(self.sensor, self.DHT11_pin)
-            ## check if tempreture and humidity data is correct ##
+            
             if humidity is not None and temperature is not None:
                 sensor_obj_1.update_temerature(temperature)
 
-                # log_obj = log.log()
-                # sql_statement = "UPDATE sensor SET sensor_data=(?) WHERE id=(?)"
-                # self.cursor.execute(sql_statement,(value, self.temp_id))           ## execute INSERT
+                log_obj_1 = log.log()
+                action_msg_1 = "the temperature is " + str(temperature) + " celsius"
+                log_obj_1.add(action_msg_1, "sensing")       
                 
                 sensor_obj_2.update_humidity(humidity)
-                # log_obj2 = log.log()
-                # action_msg2 = "the humidity is " + str(value) + " celsius"
-                # log_obj2.add(action_msg2, "sensing")
+                
+                log_obj_2 = log.log()
+                action_msg_2 = "the humidity is " + str(humidity) + " %"
+                log_obj_2.add(action_msg_2, "sensing")
 
 #################### ADC Class ##############################
 
@@ -64,7 +63,7 @@ class adc_worker():
   
     def _read(self):
         while True:
-            sleep(1)
+            sleep(3)
             sensor_obj = sensor.sensor()
             value = self.adc.read_adc(self.channel, gain=self.gain)
             value = math.ceil(value * (5 / 32786))
@@ -77,13 +76,16 @@ class adc_worker():
 
 ################## rpi_control Class ###########
 class rpi_control_():                                      
-    SERVO_PWM_PIN = 11                                     ## connect servo with pin 11
-    PIN_LEDPWM = 8                                         ## connect led with pin 11
+    servo_pwm = 11                                   
+    led_pwm_1 = 8                                         
+    led_pwm_2 = 13
+    led_pwm_3 = 15
+    
     def __init__(self):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setwarnings(False)
-        self.servo_init()                                 ## call initilizatin servo function
-        self.led_init()                                   ## call initilizatin led function
+        self.servo_init()                               
+        self.led_init()                                 
 
     #############################################################
     #   Description :  initilizatin led                         #
@@ -91,16 +93,23 @@ class rpi_control_():
     #############################################################
 
     def led_init(self):
-        GPIO.setup(self.PIN_LEDPWM,GPIO.OUT)
-        self.led_intensity = GPIO.PWM(self.PIN_LEDPWM,100)
-        self.led_intensity.start(0)
+        GPIO.setup(self.led_pwm_1,GPIO.OUT)
+        GPIO.setup(self.led_pwm_2,GPIO.OUT)
+        GPIO.setup(self.led_pwm_3,GPIO.OUT)
+        self.led_1_intensity = GPIO.PWM(self.led_pwm_1,100)
+        self.led_2_intensity = GPIO.PWM(self.led_pwm_2,100)
+        self.led_3_intensity = GPIO.PWM(self.led_pwm_3,100)
+        self.led_1_intensity.start(0)
+        self.led_2_intensity.start(0)
+        self.led_3_intensity.start(0)
+        
     #############################################################
     #   Description :  initilizatin servo                       #
     #   Parametars  :  none                                     #                                                         
     #############################################################
     def servo_init(self):
-        GPIO.setup(self.SERVO_PWM_PIN,GPIO.OUT)
-        self.servo_pwm = GPIO.PWM(self.SERVO_PWM_PIN, 50)
+        GPIO.setup(self.servo_pwm,GPIO.OUT)
+        self.servo_pwm = GPIO.PWM(self.servo_pwm, 50)
         self.servo_pwm.start(2)
         
     #############################################################
@@ -108,8 +117,14 @@ class rpi_control_():
     #   Parametars  :  brightness                               #                                                         
     #############################################################
 
-    def change_brightness(self, brightness):
-        self.led_intensity.ChangeDutyCycle(brightness)
+    def change_brightness(self, brightness, id):
+        if id == 1:
+            self.led_1_intensity.ChangeDutyCycle(brightness)
+        if id == 2:
+            self.led_2_intensity.ChangeDutyCycle(brightness)
+        if id == 3:
+            self.led_3_intensity.ChangeDutyCycle(brightness)
+        
 
     #############################################################
     #   Description :  Change servo angle                       #
@@ -125,6 +140,5 @@ class rpi_control_():
     #   Return      :  ADC value                                #                                                       
     #############################################################   
     def on_adc_changed(self):
-        # store in DATABASE
         self.value = self.adc.read_adc(0, gain=self.gain)
         return self.value
