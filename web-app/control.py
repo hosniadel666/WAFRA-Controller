@@ -7,10 +7,12 @@ import Adafruit_ADS1x15
 from time import sleep
 import time
 import threading
-import sqlite3
-from dotenv import load_dotenv
-import os
+import math
+import sensor
+import log
 
+
+PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
 
 ###########################################################
 #                  CLASSES                                #
@@ -21,8 +23,8 @@ import os
 class dht_worker():
     def __init__(self):
         self.sensor = Adafruit_DHT.DHT11
-        self.DHT11_pin = 4                        ## connect tempreture sensor with pin 4
-        self.dht_val_2db = "dht_1"
+        self.DHT11_pin = 4                        
+
     ## create thread to show tempreture and humidity ##
     def start(self):
         myThread = threading.Thread(target=self._read)
@@ -31,31 +33,29 @@ class dht_worker():
     ## read tempreture and humidity from sensor and print it ##
     def _read(self):
         while True:
+            sensor_obj_1 = sensor.sensor()
+            sensor_obj_2 = sensor.sensor()
             humidity,temperature = Adafruit_DHT.read_retry(self.sensor, self.DHT11_pin)
             ## check if tempreture and humidity data is correct ##
             if humidity is not None and temperature is not None:
-                action_msg = "the dht_1 reading is " + str(temperature) + " celsius"
-                conn = sqlite3.connect(os.getenv('PATH_2_DB'))            ## connect to DB
-                cursor = conn.cursor()                       ## get a cursor
+                sensor_obj_1.update_temerature(temperature)
 
-                sql_1 = "UPDATE sensor SET sensor_data=(?) WHERE name=(?)"
-                cursor.execute(sql_1,(temperature, self.dht_val_2db))           ## execute INSERT
-
-                sql_2 = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
-                cursor.execute(sql_2, (action_msg,"sensing"))  
-
-                conn.commit()                                ## commit
-                conn.close()                                 ## cleanup
+                # log_obj = log.log()
+                # sql_statement = "UPDATE sensor SET sensor_data=(?) WHERE id=(?)"
+                # self.cursor.execute(sql_statement,(value, self.temp_id))           ## execute INSERT
+                
+                sensor_obj_2.update_humidity(humidity)
+                # log_obj2 = log.log()
+                # action_msg2 = "the humidity is " + str(value) + " celsius"
+                # log_obj2.add(action_msg2, "sensing")
 
 #################### ADC Class ##############################
 
 class adc_worker():
-
     def __init__(self):
         self.gain = 1
         self.channel = 0
         self.adc = Adafruit_ADS1x15.ADS1115()
-        self.adc_val_2db = "adc_1"
 
     def start(self):
         myThread = threading.Thread(target=self._read)
@@ -64,20 +64,15 @@ class adc_worker():
   
     def _read(self):
         while True:
+            sleep(1)
+            sensor_obj = sensor.sensor()
             value = self.adc.read_adc(self.channel, gain=self.gain)
+            value = math.ceil(value * (5 / 32786))
             if value is not None:
-                sleep(4)
-                action_msg = "the adc_1 reading is " + str(value)
-                conn = sqlite3.connect(os.getenv('PATH_2_DB'))            ## connect to DB
-                cursor = conn.cursor()                       ## get a cursor
-                sql_1 = "UPDATE sensor SET sensor_data=(?) WHERE name=(?)"
-                cursor.execute(sql_1,(value,self.adc_val_2db))           ## execute INSERT
-
-                sql_2 = "INSERT INTO system_log(log_message, type) VALUES (?,?)"                  
-                cursor.execute(sql_2, (action_msg,"sense"))  
-
-                conn.commit()                                ## commit
-                conn.close()                                 ## cleanup
+                sensor_obj.update_adc(value)
+                log_obj = log.log()
+                action_msg = "the voltage reading is " + str(value)
+                log_obj.add(action_msg, "sensing")
 
 
 ################## rpi_control Class ###########

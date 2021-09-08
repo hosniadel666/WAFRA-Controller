@@ -8,9 +8,8 @@ from time import sleep
 import threading
 import sqlite3
 import control
-from dotenv import load_dotenv
-import os
 
+PATH_2_DB = '/home/pi/Desktop/cvs_internship/web-app/cvs.db'
 
 class action_worker():
     def __init__(self):
@@ -23,9 +22,7 @@ class action_worker():
 
     def act(self):
         while True:
-
-            self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))                       
-
+            self.conn = sqlite3.connect(PATH_2_DB)                       
             self.cursor = self.conn.cursor()
             
             self.cursor.execute("select * from actuator")
@@ -40,7 +37,7 @@ class action_worker():
     def handle(self, id, value, type):
         if id == 1:
             if type == "UPDATE" :
-                #print(value)
+                # print(value)
                 self.control.change_brightness(value)
             elif type == "OFF":
                 self.control.change_brightness(0)
@@ -70,4 +67,7 @@ class action_worker():
                 self.control.change_servo_angle(2)
             elif type == "ON":
                 self.control.change_servo_angle(value)
+
+   # def __del__(self):
+
 

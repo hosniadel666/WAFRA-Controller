@@ -24,9 +24,14 @@ class log():
             self.response['status_code'] = 201                                        ## if response get data return 201 
         else:
             self.response['status_code'] = 401
+        self.close()
         return self.response
+    
     def add(self, msg, type):
-        print("sfdjbrskhf")
-    def __del__(self):                                                                                                 ## if response can't get data return 401 
+        sql_statement = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
+        self.cursor.execute(sql_statement, (msg, type))
+        self.close()
+        
+    def close(self):                                                                                                 ## if response can't get data return 401 
         self.conn.commit()                          
         self.conn.close()
