@@ -60,7 +60,7 @@ def get_header_info():
 #                                                                    #
 ######################################################################
 @app.route('/sensors', methods=['GET'])
-def handle_post():
+def handle_get():
    header_log = log.log()
    header_log.add(get_header_info(), "HEADER_INFO")   
       
@@ -104,7 +104,7 @@ def get_sensor(id):
 #                                                         #
 ###########################################################
 @app.route('/actuators', methods=['GET'])
-def handle_actuator_post():
+def handle_actuator_get():
    header_log = log.log()
    header_log.add(get_header_info(), "HEADER_INFO")      
 

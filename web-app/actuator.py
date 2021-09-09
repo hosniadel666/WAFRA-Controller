@@ -75,7 +75,8 @@ class actuator():
         action_log = log.log()
         action_log.add(action_msg, "Action")
         
-        sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"        
+        #sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"   
+        sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"      
         # self.cursor.execute(sql_2, (value, action_type, id))
         self.cursor.execute(sql_2, (1, action_type, id))
         self.response['status_code'] = 201
