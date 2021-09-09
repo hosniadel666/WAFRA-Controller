@@ -1,8 +1,7 @@
 ###########################################################
 #                    IMPORT                               #
 ###########################################################
-from flask import Flask, request, jsonify
-import sqlite3
+from flask import Flask, request, jsonify, abort
 import urllib3
 import control
 import action
@@ -10,6 +9,7 @@ import sensor
 import actuator
 import log
 from dotenv import load_dotenv
+from functools import wraps
 
 ###############  OBJECTS  ###############################
 dht_thread = control.dht_worker()
@@ -27,6 +27,23 @@ action_thread.start()
 ################ Load Environment variables #########################
 load_dotenv()
 
+
+################ The actual decorator function ######################
+def require_appkey(view_function):
+    @wraps(view_function)
+    # the new, post-decoration function. Note *args and **kwargs here.
+    def decorated_function(*args, **kwargs):
+        with open('api.key', 'r') as apikey:
+            key=apikey.read().replace('\n', '')
+            print(key)
+        #if request.args.get('key') and request.args.get('key') == key:
+        if request.headers.get('server-api-key') and request.headers.get('server-api-key') == key:
+            return view_function(*args, **kwargs)
+        else:
+            abort(401)
+    return decorated_function
+
+
 ############### Extract Header Data From API Requests################
 def get_header_info():
    response={}
@@ -42,23 +59,26 @@ def get_header_info():
 #   methods     :  Get , Post [name,number, discription,isDigitsl]   #
 #                                                                    #
 ######################################################################
-@app.route('/sensors', methods=['GET','POST'])
+@app.route('/sensors', methods=['GET'])
 def handle_post():
    header_log = log.log()
-   header_log.add(get_header_info(), "HEADER_INFO")      
-########################### GET  REQUEST ############################
-   if request.method == 'GET':
-      sensor_obj = sensor.sensor()
-      return jsonify(sensor_obj.get_all())                
+   header_log.add(get_header_info(), "HEADER_INFO")   
+      
+   sensor_obj = sensor.sensor()
+   return jsonify(sensor_obj.get_all())     
+              
+@app.route('/sensors', methods=['POST'])
+@require_appkey
+def handle_post():
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")  
 
-########################### POST REQUEST ############################
-   elif request.method == 'POST':
-      sensor_obj = sensor.sensor()
-      sensor_name = request.form['name']
-      sensor_number = request.form['number']
-      sensor_discription = request.form['discription']
-      sensor_isDigital = request.form['isDigital']
-      return jsonify(sensor_obj.add(sensor_name, sensor_number, sensor_discription))
+   sensor_obj = sensor.sensor()
+   sensor_name = request.form['name']
+   sensor_number = request.form['number']
+   sensor_discription = request.form['discription']
+   sensor_isDigital = request.form['isDigital']
+   return jsonify(sensor_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
 
 
 ###########################################################
@@ -83,22 +103,26 @@ def get_sensor(id):
 #   methods     :  Get ,post                              #
 #                                                         #
 ###########################################################
-@app.route('/actuators', methods=['POST', 'GET'])
+@app.route('/actuators', methods=['GET'])
 def handle_actuator_post():
    header_log = log.log()
    header_log.add(get_header_info(), "HEADER_INFO")      
-###################  GET REQUEST   #########################
-   if request.method == 'GET':
-      actuator_obj = actuator.actuator()
-      return jsonify(actuator_obj.get_all()) 
-###################  POST REQUEST  #########################
-   elif request.method == 'POST':
-      actuator_obj = actuator.actuator()
-      sensor_name = request.form['name']
-      sensor_number = request.form['number']
-      sensor_discription = request.form['discription']
-      sensor_isDigital = request.form['isDigital']
-      return jsonify(actuator_obj.add(sensor_name, sensor_number, sensor_discription))                             
+
+   actuator_obj = actuator.actuator()
+   return jsonify(actuator_obj.get_all()) 
+
+@app.route('/actuators', methods=['POST'])
+@require_appkey
+def handle_actuator_post():
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")      
+
+   actuator_obj = actuator.actuator()
+   sensor_name = request.form['name']
+   sensor_number = request.form['number']
+   sensor_discription = request.form['discription']
+   sensor_isDigital = request.form['isDigital']
+   return jsonify(actuator_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))                             
 
 ###########################################################
 #   Description :  Route of actuator with ID for each one #
@@ -122,6 +146,7 @@ def get_actuator(id):
 #                                                           #
 #############################################################
 @app.route('/actuators/set_action/<int:id>', methods=['POST'])
+@require_appkey
 def control_servo(id):  
    
    header_log = log.log()

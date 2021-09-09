@@ -7,10 +7,8 @@ import Adafruit_ADS1x15
 from time import sleep
 import time
 import threading
-import math
 import sensor
 import log
-from dotenv import load_dotenv
 import os
 
 ###########################################################
