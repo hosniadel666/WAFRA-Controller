@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication,QDialog
 from PyQt5 import uic, QtWidgets
 from backend import backend_
-from rpi_control import dht_worker
+import control
 import sys
 
 class HMI(QtWidgets.QMainWindow):
@@ -13,7 +13,7 @@ class HMI(QtWidgets.QMainWindow):
         uic.loadUi('mainwindow.ui',self)
         self.ctrl = backend_()
         
-        self.dht_worker = dht_worker() # create an object 
+        self.dht_worker = control.dht_worker()  
         self.dht_worker.valueChanged.connect(self.on_dht_changed) 
         self.dht_worker.start()
 

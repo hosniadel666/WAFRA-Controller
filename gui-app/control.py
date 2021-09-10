@@ -2,7 +2,6 @@ import RPi.GPIO as GPIO
 import Adafruit_DHT
 import Adafruit_ADS1x15
 from time import sleep
-import time
 import threading
 from PyQt5 import QtCore
 
@@ -22,7 +21,7 @@ class dht_worker(QtCore.QObject):
             if humidity is not None and temperature is not None:
                 self.valueChanged.emit(temperature, humidity)
     
-class rpi_control_():
+class control():
     temperature = 0
     humidity = 0
     SERVO_PWM_PIN = 11

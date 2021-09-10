@@ -1,6 +1,7 @@
 import sys
-from rpi_control import rpi_control_
+import control
 import sqlite3
+import csv
 
 class DB():
     csvFile = "sensor_readings.csv"
@@ -17,7 +18,7 @@ class DB():
                
 class backend_():
     def __init__(self):
-        self.control = rpi_control_()
+        self.control = control.control()
 
     def store_servo_angle(self, angle):
         print("bjfkg")
