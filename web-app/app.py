@@ -7,6 +7,8 @@ import actuator
 import log
 from dotenv import load_dotenv
 from functools import wraps
+import hashlib
+import os
 
 # Define used objects for our APIs
 dht_thread = control.dht_worker()
@@ -69,17 +71,26 @@ def handle_get():
 
 
 @app.route('/sensors', methods=['POST'])
-@require_appkey
 def handle_post():
-    header_log = log.log()
-    header_log.add(get_header_info(), "HEADER_INFO")
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")  
 
-    sensor_obj = sensor.sensor()
-    sensor_name = request.form['name']
-    sensor_number = request.form['number']
-    sensor_discription = request.form['discription']
-    sensor_isDigital = request.form['isDigital']
-    return jsonify(sensor_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
+   sensor_obj = sensor.sensor()
+   sensor_name = request.form['name']
+   sensor_number = request.form['number']
+   sensor_discription = request.form['discription']
+   sensor_isDigital = request.form['isDigital']
+   sensor_messageSignature = request.form['messageSignature']
+
+   # Authintication
+   my_str = os.getenv('SECRET_KEY') + sensor_discription + str(sensor_isDigital) + sensor_name + str(sensor_number)
+   my_str_as_bytes = str.encode(my_str)
+   message_signature = hashlib.md5(my_str_as_bytes).hexdigest().upper()
+
+   if sensor_messageSignature == message_signature:
+      return jsonify(sensor_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
+   else:               
+      abort(401)
 
 #--------------------------------------------------------------------#
 #   API         :  <ip>:<port>/sensors/<id>                          #
@@ -117,18 +128,29 @@ def handle_actuator_get():
     return jsonify(actuator_obj.get_all())
 
 
-@app.route('/actuators', methods=['POST'])
-@require_appkey
-def handle_actuator_post():
-    header_log = log.log()
-    header_log.add(get_header_info(), "HEADER_INFO")
 
-    actuator_obj = actuator.actuator()
-    sensor_name = request.form['name']
-    sensor_number = request.form['number']
-    sensor_discription = request.form['discription']
-    sensor_isDigital = request.form['isDigital']
-    return jsonify(actuator_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
+@app.route('/actuators', methods=['POST'])
+def handle_actuator_post():
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")
+
+   actuator_obj = actuator.actuator()
+   sensor_name = request.form['name']
+   sensor_number = request.form['number']
+   sensor_discription = request.form['discription']
+   sensor_isDigital = request.form['isDigital']
+   sensor_messageSignature = request.form['messageSignature']
+
+   # Authintication 
+   my_str = os.getenv('SECRET_KEY') + sensor_discription + str(sensor_isDigital) + sensor_name + str(sensor_number)
+   my_str_as_bytes = str.encode(my_str)
+   message_signature = hashlib.md5(my_str_as_bytes).hexdigest().upper()
+  
+   if sensor_messageSignature == message_signature:
+       return jsonify(actuator_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
+   else:
+       abort(401)
+
 
 #--------------------------------------------------------------------#
 #   API         :  <ip>:<port>/actuators/<id>                        #
@@ -156,17 +178,28 @@ def get_actuator(id):
 
 
 @app.route('/actuators/set_action/<int:id>', methods=['POST'])
-@require_appkey
-def control_servo(id):
+def control_servo(id):  
+   
+   header_log = log.log()
+   header_log.add(get_header_info(), "HEADER_INFO")     
+    
+   actuator_obj = actuator.actuator()    
+   #value = int(request.form['value'])
+   action_type = request.form['action_type']
+   sensor_messageSignature = request.form['messageSignature']
+   #return jsonify(actuator_obj.set_action(id, value, action_type)) 
+   # Authintication 
+   my_str = os.getenv('SECRET_KEY') + action_type
+   my_str_as_bytes = str.encode(my_str)
 
-    header_log = log.log()
-    header_log.add(get_header_info(), "HEADER_INFO")
+   message_signature = hashlib.md5(my_str_as_bytes).hexdigest().upper()
 
-    actuator_obj = actuator.actuator()
-    #value = int(request.form['value'])
-    action_type = request.form['action_type']
-    # return jsonify(actuator_obj.set_action(id, value, action_type))
-    return jsonify(actuator_obj.set_action(id, action_type))
+   print(message_signature)
+
+   if sensor_messageSignature == message_signature:
+      return jsonify(actuator_obj.set_action(id, action_type)) 
+   else:
+      abort(401)
 
 #--------------------------------------------------------------------#
 #   API         :  <ip>:<port>/system_log                            #
