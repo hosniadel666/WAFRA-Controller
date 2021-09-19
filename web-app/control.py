@@ -45,10 +45,11 @@ class adc_worker():
 
     def _read(self):
         while True:
-            sleep(3)
+            sleep(2)
             sensor_obj = sensor.sensor()
             value = self.adc.read_adc(self.channel, gain=self.gain)
-            value = value * (5 / 32786)
+            value = value * (5 / 32768)
+            print(value)
             if value is not None:
                 sensor_obj.update_adc(value)
 
@@ -56,16 +57,19 @@ class adc_worker():
 
 
 class control():
-    servo_pwm = 11
-    led_pwm_1 = 8
+    servo_pwm = 8
+    led_pwm_1 = 11
     led_pwm_2 = 13
     led_pwm_3 = 15
+    relay = 19
+    
 
     def __init__(self):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setwarnings(False)
         self.servo_init()
         self.led_init()
+        self.relay_init()
 
     #-----------------------------------------------------------#
     #   Description :  Initilizatin of leds[motors]             #
@@ -82,6 +86,21 @@ class control():
         self.led_1_intensity.start(0)
         self.led_2_intensity.start(0)
         self.led_3_intensity.start(0)
+        
+    #-----------------------------------------------------------#
+    #   Description :  Initilizatin of relay[Gate]              #
+    #   Parametars  :  none                                     #
+    #-----------------------------------------------------------#
+    
+    def relay_init(self):
+        GPIO.setup(self.relay, GPIO.OUT)
+        GPIO.output(self.relay, False)
+        
+    def change_relay_status(self, value):
+        if value != 0:
+            GPIO.output(self.relay, False)
+        else:
+            GPIO.output(self.relay, True)
 
     #-----------------------------------------------------------#
     #   Description :  Initilizatin of a servo motor            #
@@ -90,7 +109,7 @@ class control():
     def servo_init(self):
         GPIO.setup(self.servo_pwm, GPIO.OUT)
         self.servo_pwm = GPIO.PWM(self.servo_pwm, 50)
-        self.servo_pwm.start(2)
+        self.servo_pwm.start(0)
 
     #-----------------------------------------------------------#
     #   Description :  Change the brightness of the given led   #
@@ -111,7 +130,7 @@ class control():
     #-----------------------------------------------------------#
 
     def change_servo_angle(self, angle):
-        self.servo_pwm.ChangeDutyCycle((1.0/18.0 * angle) + 2)
+        self.servo_pwm.ChangeDutyCycle((1.0/18.0 * angle) + 2.5)
 
     #-----------------------------------------------------------#
     #   Description :  Get the value of ADC reading             #

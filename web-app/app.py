@@ -42,6 +42,20 @@ def require_appkey(view_function):
     return decorated_function
 
 
+# Return the token which is the hashed value of value 
+def generate_token(body):
+    lis = []
+    for parameter in sorted(body):
+        lis.append(body[parameter])
+    message = os.getenv('SECRET_KEY') 
+    for parameter in lis:
+        message = message + parameter 
+    
+    message_as_bytes = str.encode(message)
+    message_signature_hashed = hashlib.md5(message_as_bytes).hexdigest().upper()
+    print(message)
+    return message_signature_hashed
+
 # Extract Header Data From APIs Requests
 def get_header_info():
     response = {}
@@ -72,25 +86,29 @@ def handle_get():
 
 @app.route('/sensors', methods=['POST'])
 def handle_post():
-   header_log = log.log()
-   header_log.add(get_header_info(), "HEADER_INFO")  
+    header_log = log.log()
+    header_log.add(get_header_info(), "HEADER_INFO")  
 
-   sensor_obj = sensor.sensor()
-   sensor_name = request.form['name']
-   sensor_number = request.form['number']
-   sensor_discription = request.form['discription']
-   sensor_isDigital = request.form['isDigital']
-   sensor_messageSignature = request.form['messageSignature']
+    sensor_obj = sensor.sensor()
+    sensor_name = request.form['name']
+    sensor_number = request.form['number']
+    sensor_discription = request.form['discription']
+    sensor_isDigital = request.form['isDigital']
+    sensor_messageSignature = request.form['messageSignature']
 
-   # Authintication
-   my_str = os.getenv('SECRET_KEY') + sensor_discription + str(sensor_isDigital) + sensor_name + str(sensor_number)
-   my_str_as_bytes = str.encode(my_str)
-   message_signature = hashlib.md5(my_str_as_bytes).hexdigest().upper()
+    body = {}
+    body['name'] = sensor_name
+    body['number'] = sensor_number
+    body['discription'] = sensor_discription
+    body['isDigital'] = sensor_isDigital
 
-   if sensor_messageSignature == message_signature:
-      return jsonify(sensor_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
-   else:               
-      abort(401)
+    # Authintication
+    token = generate_token(body)
+    print(token)
+    if sensor_messageSignature == token:
+        return jsonify(sensor_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
+    else:
+        abort(401)
 
 #--------------------------------------------------------------------#
 #   API         :  <ip>:<port>/sensors/<id>                          #
@@ -105,6 +123,7 @@ def get_sensor(id):
     header_log.add(get_header_info(), "HEADER_INFO")
     if request.method == 'GET':
         sensor_obj = sensor.sensor()
+        #print(sensor_obj.get_id(id))
         return jsonify(sensor_obj.get_id(id))
     elif request.method == 'DELETE':
         sensor_obj = sensor.sensor()
@@ -131,25 +150,29 @@ def handle_actuator_get():
 
 @app.route('/actuators', methods=['POST'])
 def handle_actuator_post():
-   header_log = log.log()
-   header_log.add(get_header_info(), "HEADER_INFO")
+    header_log = log.log()
+    header_log.add(get_header_info(), "HEADER_INFO")
 
-   actuator_obj = actuator.actuator()
-   sensor_name = request.form['name']
-   sensor_number = request.form['number']
-   sensor_discription = request.form['discription']
-   sensor_isDigital = request.form['isDigital']
-   sensor_messageSignature = request.form['messageSignature']
+    actuator_obj = actuator.actuator()
+    actuator_name = request.form['name']
+    actuator_number = request.form['number']
+    actuator_discription = request.form['discription']
+    actuator_isDigital = request.form['isDigital']
+    actuator_messageSignature = request.form['messageSignature']
 
-   # Authintication 
-   my_str = os.getenv('SECRET_KEY') + sensor_discription + str(sensor_isDigital) + sensor_name + str(sensor_number)
-   my_str_as_bytes = str.encode(my_str)
-   message_signature = hashlib.md5(my_str_as_bytes).hexdigest().upper()
-  
-   if sensor_messageSignature == message_signature:
-       return jsonify(actuator_obj.add(sensor_name, sensor_number, sensor_discription, sensor_isDigital))
-   else:
-       abort(401)
+    body = {}
+    body['name'] = actuator_name
+    body['number'] = actuator_number
+    body['discription'] = actuator_discription
+    body['isDigital'] = actuator_isDigital
+
+    # Authintication
+    token = generate_token(body)
+    print(token)
+    if actuator_messageSignature == token:
+        return jsonify(actuator_obj.add(actuator_name, actuator_number, actuator_discription, actuator_isDigital))
+    else:
+        abort(401)
 
 
 #--------------------------------------------------------------------#
@@ -176,30 +199,37 @@ def get_actuator(id):
 #   Methods     :  POST[value, action_type]                          #
 #--------------------------------------------------------------------#
 
-
 @app.route('/actuators/set_action/<int:id>', methods=['POST'])
 def control_servo(id):  
-   
-   header_log = log.log()
-   header_log.add(get_header_info(), "HEADER_INFO")     
-    
-   actuator_obj = actuator.actuator()    
-   #value = int(request.form['value'])
-   action_type = request.form['action_type']
-   sensor_messageSignature = request.form['messageSignature']
-   #return jsonify(actuator_obj.set_action(id, value, action_type)) 
-   # Authintication 
-   my_str = os.getenv('SECRET_KEY') + action_type
-   my_str_as_bytes = str.encode(my_str)
 
-   message_signature = hashlib.md5(my_str_as_bytes).hexdigest().upper()
+    header_log = log.log()
+    header_log.add(get_header_info(), "HEADER_INFO")     
 
-   print(message_signature)
+    actuator_obj = actuator.actuator()    
+    action_type = request.form['action_type']
+    sensor_messageSignature = request.form['messageSignature']
+    body = {}
+    body['action_type'] = action_type
 
-   if sensor_messageSignature == message_signature:
-      return jsonify(actuator_obj.set_action(id, action_type)) 
-   else:
-      abort(401)
+    value = request.form.get('value')
+    if value is None :
+        
+        # Authintication
+        token = generate_token(body)
+        print(token)
+        if sensor_messageSignature == token:
+            return jsonify(actuator_obj.set_action(id, action_type)) 
+        else:
+            abort(401)
+    else:
+        body['value'] = value
+        # Authintication
+        token = generate_token(body)
+        print(token)
+        if sensor_messageSignature == token:
+            return jsonify(actuator_obj.set_action_with_value(id, value, action_type)) 
+        else:
+            abort(401)
 
 #--------------------------------------------------------------------#
 #   API         :  <ip>:<port>/system_log                            #

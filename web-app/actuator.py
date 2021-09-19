@@ -68,21 +68,41 @@ class actuator():
         self.close()
         return self.response
 
-    # def set_action(self, id, value, action_type):
+
     def set_action(self, id, action_type):
-        action_msg = "the actuator " + str(id) + " is " + action_type
+        action_msg = "the actuator " + str(id) + " is " + action_type 
 
         action_log = log.log()
         action_log.add(action_msg, "Action")
-
-        #sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"
+        
         sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"
-        # self.cursor.execute(sql_2, (value, action_type, id))
-        self.cursor.execute(sql_2, (1, action_type, id))
+        value = 0
+        if action_type == "ON":
+            if id == 4:
+                value = 90
+            else:
+                value = 100
+        else:
+            value = 0
+            
+        self.cursor.execute(sql_2, (value, action_type, id))
         self.response['status_code'] = 201
         self.close()
         return self.response
+    
+    def set_action_with_value(self, id, value, action_type):
+        action_msg = "the actuator " + str(id) + " is " + action_type + "with action type " 
+        action_log = log.log()
+        action_log.add(action_msg, "Action")
 
+        sql_2 = "UPDATE actuator SET value=(?), type=(?) WHERE id=(?)"
+    
+        self.cursor.execute(sql_2, (value, action_type, id))
+        
+        self.response['status_code'] = 201
+        self.close()
+        return self.response
+    
     def close(self):
         self.conn.commit()
         self.conn.close()

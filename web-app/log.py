@@ -5,10 +5,10 @@ import sqlite3
 class log():
     def __init__(self):
         self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))
-        self.cursor = self.conn.cursor()
         self.response = {}
 
     def get_all(self):
+        self.cursor = self.conn.cursor()
         self.cursor.execute("select * from system_log")
         rows = self.cursor.fetchall()
 
@@ -28,9 +28,11 @@ class log():
         return self.response
 
     def add(self, msg, type):
+        self.cursor = self.conn.cursor()
         sql_statement = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
         self.cursor.execute(sql_statement, (msg, type))
         self.close()
+
 
     def close(self):
         self.conn.commit()

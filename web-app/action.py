@@ -25,23 +25,23 @@ class action_worker():
                 for row in rows:
                     self.handle(row[0], row[5], row[6])
 
-            self.conn.commit()
-            self.conn.close()
+            # self.conn.commit()
+            # self.conn.close()
 
     def handle(self, id, value, type):
         if id == 1:
             if type == "UPDATE":
                 self.control.change_brightness(value, id)
             elif type == "OFF":
-                self.control.change_brightness(0, id)
+                self.control.change_brightness(value, id)
             elif type == "ON":
-                self.control.change_brightness(100, id)
+                self.control.change_brightness(value, id)
 
         elif id == 2:
             if type == "UPDATE":
                 self.control.change_brightness(value, id)
             elif type == "OFF":
-                self.control.change_brightness(0, id)
+                self.control.change_brightness(value, id)
             elif type == "ON":
                 self.control.change_brightness(value, id)
 
@@ -49,7 +49,7 @@ class action_worker():
             if type == "UPDATE":
                 self.control.change_brightness(value, id)
             elif type == "OFF":
-                self.control.change_brightness(0, id)
+                self.control.change_brightness(value, id)
             elif type == "ON":
                 self.control.change_brightness(value, id)
 
@@ -57,6 +57,13 @@ class action_worker():
             if type == "UPDATE":
                 self.control.change_servo_angle(value)
             elif type == "OFF":
-                self.control.change_servo_angle(2)
+                self.control.change_servo_angle(0)
             elif type == "ON":
                 self.control.change_servo_angle(90)
+        elif id == 6:
+            if type == "UPDATE":
+                self.control.change_relay_status(value)
+            elif type == "OFF":
+                self.control.change_relay_status(0)
+            elif type == "ON":
+                self.control.change_relay_status(100)
