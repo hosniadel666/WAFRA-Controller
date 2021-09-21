@@ -5,7 +5,7 @@ sudo apt update
 sudo apt upgrade
 sudo apt install python3 -y
 sudo apt install python3-pip -y
-udo apt-get install git-core -y
+sudo apt-get install git-core -y
 
 ./bash-scripts/sublime.sh
 ./bash-scripts/socket_io.sh
