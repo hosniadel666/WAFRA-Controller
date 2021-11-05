@@ -1,12 +1,11 @@
-import os
-import sqlite3
 import log
+import db 
 
 
 class actuator():
     def __init__(self):
-        self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))
-        self.cursor = self.conn.cursor()
+        self.database = db.db()
+        self.cursor = self.database.get_cursor()
         self.response = {}
 
     def get_all(self):
@@ -100,9 +99,8 @@ class actuator():
         self.cursor.execute(sql_2, (value, action_type, id))
         
         self.response['status_code'] = 201
-        self.close()
-        return self.response
-    
-    def close(self):
         self.conn.commit()
-        self.conn.close()
+        return self.response
+
+        
+    

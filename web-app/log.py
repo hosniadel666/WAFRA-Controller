@@ -1,14 +1,15 @@
 import os
 import sqlite3
+import db
 
 
 class log():
     def __init__(self):
-        self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))
+        self.database = db.db()
+        self.cursor = self.database.get_cursor()
         self.response = {}
 
     def get_all(self):
-        self.cursor = self.conn.cursor()
         self.cursor.execute("select * from system_log")
         rows = self.cursor.fetchall()
 
@@ -24,16 +25,12 @@ class log():
             self.response['status_code'] = 201
         else:
             self.response['status_code'] = 401
-        self.close()
+        self.conn.commit()
         return self.response
 
     def add(self, msg, type):
         self.cursor = self.conn.cursor()
         sql_statement = "INSERT INTO system_log(log_message, type) VALUES (?,?)"
         self.cursor.execute(sql_statement, (msg, type))
-        self.close()
-
-
-    def close(self):
         self.conn.commit()
-        self.conn.close()
+

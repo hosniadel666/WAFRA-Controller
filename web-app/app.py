@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from functools import wraps
 import hashlib
 import os
+import db
 
 # Define used objects for our APIs
 dht_thread = control.dht_worker()
@@ -66,6 +67,11 @@ def get_header_info():
     header_msg = response['remote_addr'] + " " + response['method'] + \
         " " + response['host_server'] + response['path']
     return header_msg
+
+
+
+# Init data base
+db.db().init_db()
 
 #--------------------------------------------------------------------#
 #   API         :  <ip>:<port>/sensors                               #

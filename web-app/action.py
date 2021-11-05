@@ -1,13 +1,14 @@
 from time import sleep
 import threading
-import sqlite3
 import control
-import os
+import db 
 
 
 class action_worker():
     def __init__(self):
         self.control = control.control()
+        self.database = db.db()
+        self.cursor = self.database.get_cursor()
 
     def start(self):
         myThread = threading.Thread(target=self.act)
@@ -16,17 +17,14 @@ class action_worker():
 
     def act(self):
         while True:
-            self.conn = sqlite3.connect(os.getenv('PATH_2_DB'))
-            self.cursor = self.conn.cursor()
-
             self.cursor.execute("select * from actuator")
             rows = self.cursor.fetchall()
             if len(rows) >= 1:
                 for row in rows:
                     self.handle(row[0], row[5], row[6])
 
-            # self.conn.commit()
-            # self.conn.close()
+            self.conn.commit()
+
 
     def handle(self, id, value, type):
         if id == 1:
