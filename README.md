@@ -20,16 +20,22 @@
 * [General info](#general-info)
 * [Setup](#setup)
 * [Control Server](#control-server)
+* [Technologies and Tools](#technologies-and-tools)
 * [GUI Application](#gui-application)
 
 
 
 ## General info
-This project is simple Lorem ipsum dolor generator.
+<p>The main goal of WAFRA is to develop a smart sustainable aquaponic system, monitored and controlled through photovoltaic powered remote sensing. The system would contribute to socio-economic growth and create new jobs in remote areas through offering a complete system that starts with training trainers and/or individuals on system operation and proposing a cost benefit analysis to start the system.</p>
+<p>Here in this repository we are developing:</p>
+
+* On-line monitoring system for water quality and system efficiency by developing a web server and installing it on an embedded board which will provide a service to collect sensors data and perform control actions.
+* GUI application which will be installed in HMI(Human Machine Interface) in ecah field location.
+
 
 
 ## Setup
-- To install dependencies for this project, run this bash script on Raspberry Pi:
+- To install dependencies for this project, run this bash script on your Raspberry Pi:
 ```
 $ ./setup.sh
 ```
@@ -38,16 +44,26 @@ $ ./setup.sh
 Discription of control server
 
 ### System Architecture
-Discription of system architecture
-<!-- <br/>
+ <br/>
 <p align="center">
-  <img width="460" height="300" src="./resources/system-architecture-2.png">
-</p> -->
+  <img src="./resources/our_system_interaction.png">
+</p> 
 
-### Technologies 
-Discription of technology used
+### Technologies and tools 
+- Programming language: Python
+- Development board: Raspberry PI 
+- Framworks and libraries: Flask, PyQt5, hashlib, threading
+- Database: SQLite
+- Operating System: Rasbian(Debian-based OS)
+- Source Code Management: GIT  
+- Other tools: Postman, SSH, Remote Desktop Connection
+
 ### Run 
 To run this project, install it locally on Raspberry Pi:
+
+```
+$ flask run -h ip:port
+```
 
 <!-- <details>
     <summary>Technologies</summary>
@@ -56,7 +72,10 @@ To run this project, install it locally on Raspberry Pi:
 
 
 ## GUI Application
-Discription of control server
+<p align="center">
+  <img src="./resources/our_system_interaction.png">
+</p> 
+
 
 ### System Architecture
 Discription of system architecture
